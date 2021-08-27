@@ -3,10 +3,10 @@
 ### Docker build, run
 ```
 $ docker build -t ubuntu:ccpp .
-$ docker run -itv /Users/takahashi/Go2/go_compiler:/home/projects d3216dd130a1 /bin/bash
+$ docker run -itv /Users/takahashi/Go2/go_compiler:/home/projects 01c8ea667b7f /bin/bash
 ```
 
 ### execute
 ```
-# cat sample.s | ./asrun
+# go run main.go | ./asrun 
 ```
