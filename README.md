@@ -8,6 +8,5 @@ $ docker run -itv /Users/takahashi/Go2/go_compiler:/home/projects d3216dd130a1 /
 
 ### execute
 ```
-# gcc sample.s
-# ./a.out
-# echo $?
+# cat sample.s | ./asrun
+```
