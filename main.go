@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"strconv"
 )
 
 type Token struct {
@@ -74,20 +75,57 @@ func tokenize() []*Token {
 	return tokens
 }
 
+var tokens []*Token
+var tokenIndex = 0
+
+func getToken() *Token {
+	if tokenIndex == len(tokens) {
+		return nil
+	}
+	token := tokens[tokenIndex]
+	tokenIndex++
+	return token
+}
+
+type Expr struct {
+	kind   string // intliteral"
+	intval int
+}
+
+func parse() *Expr {
+	token := getToken()
+	switch token.kind {
+	case "intliteral":
+		number, err := strconv.Atoi(token.value)
+		if err != nil {
+			panic(err)
+		}
+		return &Expr{
+			kind:   "intliteral",
+			intval: number,
+		}
+	default:
+		panic("Unexpected token.kind")
+	}
+}
+
+func generateExpr(expr *Expr) {
+	switch expr.kind {
+	case "intliteral":
+		fmt.Printf(" mov $%d, %%rax\n", expr.intval)
+	default:
+		panic("Unexpected expr.kind")
+	}
+}
+
 func main() {
 	source, _ = ioutil.ReadFile("/dev/stdin")
-	tokens := tokenize()
-	for _, token := range tokens {
-		fmt.Print(token.value, " ")
-	}
-	fmt.Println()
-	// number, err := strconv.Atoi(string(source))
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// fmt.Printf("\n")
-	// fmt.Printf(" .global main\n")
-	// fmt.Printf("main:\n")
-	// fmt.Printf(" mov $%d, %%rax\n", number)
-	// fmt.Printf(" ret\n")
+	tokens = tokenize()
+	expr := parse()
+
+	fmt.Printf("\n")
+	fmt.Printf(" .global main\n")
+	fmt.Printf("main:\n")
+	generateExpr(expr)
+	fmt.Printf(" ret\n")
 }
