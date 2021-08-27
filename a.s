@@ -1,5 +1,5 @@
 
  .global main
 main:
- mov $4030, %rax
+ mov $12, %rax
  ret

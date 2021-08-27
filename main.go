@@ -88,8 +88,10 @@ func getToken() *Token {
 }
 
 type Expr struct {
-	kind   string // intliteral"
-	intval int
+	kind     string // intliteral", "unary"
+	intval   int
+	operator string // "+", "-"
+	operand  *Expr  // 式の中に式がある、再帰的な構造になっている
 }
 
 func parse() *Expr {
@@ -104,6 +106,12 @@ func parse() *Expr {
 			kind:   "intliteral",
 			intval: number,
 		}
+	case "punct":
+		return &Expr{
+			kind:     "unary",
+			operator: token.value,
+			operand:  parse(),
+		}
 	default:
 		panic("Unexpected token.kind")
 	}
@@ -113,6 +121,13 @@ func generateExpr(expr *Expr) {
 	switch expr.kind {
 	case "intliteral":
 		fmt.Printf(" mov $%d, %%rax\n", expr.intval)
+	case "unary":
+		switch expr.operator {
+		case "+":
+			fmt.Printf(" mov $%d, %%rax\n", expr.operand.intval)
+		case "-":
+			fmt.Printf(" mov $-%d, %%rax\n", expr.operand.intval)
+		}
 	default:
 		panic("Unexpected expr.kind")
 	}
