@@ -88,13 +88,15 @@ func getToken() *Token {
 }
 
 type Expr struct {
-	kind     string // intliteral", "unary"
+	kind     string // intliteral", "unary", "binary"
 	intval   int
 	operator string // "+", "-"
 	operand  *Expr  // 式の中に式がある、再帰的な構造になっている
+	left     *Expr
+	right    *Expr
 }
 
-func parse() *Expr {
+func parseUnaryExpr() *Expr {
 	token := getToken()
 	switch token.kind {
 	case "intliteral":
@@ -110,10 +112,29 @@ func parse() *Expr {
 		return &Expr{
 			kind:     "unary",
 			operator: token.value,
-			operand:  parse(),
+			operand:  parseUnaryExpr(),
 		}
 	default:
 		panic("Unexpected token.kind")
+	}
+}
+
+func parse() *Expr {
+	epxr := parseUnaryExpr()
+	token := getToken()
+	if token == nil || token.value == ";" {
+		return epxr
+	}
+	switch token.value {
+	case "+", "-":
+		return &Expr{
+			kind:     "binary",
+			operator: token.value,
+			left:     epxr,
+			right:    parseUnaryExpr(),
+		}
+	default:
+		panic("Unexpected token.value")
 	}
 }
 
@@ -127,6 +148,17 @@ func generateExpr(expr *Expr) {
 			fmt.Printf(" mov $%d, %%rax\n", expr.operand.intval)
 		case "-":
 			fmt.Printf(" mov $-%d, %%rax\n", expr.operand.intval)
+		}
+	case "binary":
+		switch expr.operator {
+		case "+":
+			fmt.Printf(" mov $%d, %%rax\n", expr.left.intval)
+			fmt.Printf(" mov $%d, %%rcx\n", expr.right.intval)
+			fmt.Printf(" add %%rcx, %%rax\n")
+		case "-":
+			fmt.Printf(" mov $%d, %%rax\n", expr.left.intval)
+			fmt.Printf(" mov $%d, %%rcx\n", expr.right.intval)
+			fmt.Printf(" sub %%rcx, %%rax\n")
 		}
 	default:
 		panic("Unexpected expr.kind")
